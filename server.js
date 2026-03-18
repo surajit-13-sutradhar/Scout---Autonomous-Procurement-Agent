@@ -43,8 +43,17 @@ app.post('/api/tinyfish', async (req, res) => {
   }
 });
 
-// Explicitly serve the agent HTML on the root path
-app.get('/', (req, res) => {
+// Explicitly serve static assets to ensure proper MIME types on Vercel
+app.get('/styles.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'styles.css'));
+});
+
+app.get('/app.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'app.js'));
+});
+
+// Explicitly serve the agent HTML on the root path and any unmatched path (SPA fallback)
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
