@@ -13,6 +13,7 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
+
 app.post('/api/tinyfish', async (req, res) => {
   const tfKey = req.headers['x-tinyfish-key'];
   if (!tfKey) return res.status(401).json({ error: 'Missing TinyFish API key' });
