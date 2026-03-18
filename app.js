@@ -38,9 +38,9 @@ function getSites() { return [...document.querySelectorAll('.chip.on')].map(c =>
 function mkJob(cfg) {
     const id = Date.now().toString();
     const job = {
-    id, cfg, status: 'running', startTime: Date.now(), endTime: null,
-    streams: cfg.sites.map(s => ({ site: s.name, url: s.url, status: 'pending', logs: [], result: null, controller: null })),
-    results: [], insight: null
+        id, cfg, status: 'running', startTime: Date.now(), endTime: null,
+        streams: cfg.sites.map(s => ({ site: s.name, url: s.url, status: 'pending', logs: [], result: null, controller: null })),
+        results: [], insight: null
     };
     jobs.unshift(job);
     renderSidebar();
@@ -50,8 +50,8 @@ function mkJob(cfg) {
 function renderSidebar() {
     const el = document.getElementById('job-list');
     if (!jobs.length) {
-    el.innerHTML = '<div style="font-size:11px;color:var(--ink3);font-family:var(--mono)">No jobs yet</div>';
-    return;
+        el.innerHTML = '<div style="font-size:11px;color:var(--ink3);font-family:var(--mono)">No jobs yet</div>';
+        return;
     }
     el.innerHTML = jobs.map(j => `
     <div class="jc ${j.id === activeId ? 'active' : ''}" onclick="showJob('${j.id}')">
@@ -71,11 +71,11 @@ function renderJob(job) {
     const elapsed = job.endTime ? ((job.endTime - job.startTime) / 1000).toFixed(1) : null;
 
     const streamsHtml = job.streams.map((s, i) => {
-    const pct = { done: 100, running: 55, error: 100, pending: 0 }[s.status] || 0;
-    const logHtml = s.logs.length
-        ? s.logs.map(l => `<div class="ll"><span class="lt">${l.time}</span><span class="lm ${l.type}">${esc(l.msg)}</span></div>`).join('')
-        : '<span style="color:var(--ink3)">Waiting…</span>';
-    return `<div class="sc" id="sc-${job.id}-${i}">
+        const pct = { done: 100, running: 55, error: 100, pending: 0 }[s.status] || 0;
+        const logHtml = s.logs.length
+            ? s.logs.map(l => `<div class="ll"><span class="lt">${l.time}</span><span class="lm ${l.type}">${esc(l.msg)}</span></div>`).join('')
+            : '<span style="color:var(--ink3)">Waiting…</span>';
+        return `<div class="sc" id="sc-${job.id}-${i}">
     <div class="sh"><span class="dot ${s.status === 'pending' ? 'idle' : s.status}"></span><span class="ss2">${esc(s.site)}</span><span class="su">${esc(s.url)}</span></div>
     <div class="pw"><div class="pb2 ${s.status === 'done' ? 'done' : ''}" style="width:${pct}%"></div></div>
     <div class="slog" id="log-${job.id}-${i}">${logHtml}</div>
@@ -101,8 +101,8 @@ function renderJob(job) {
     <div class="pt"><table>
     <thead><tr><th>Source</th><th>Product match</th><th>Price</th><th>Availability</th><th>Notes</th></tr></thead>
     <tbody>${job.results.map(r => {
-    const best = r.price === minP && minP != null, worst = r.price === maxP && maxP != null && minP !== maxP;
-    return `<tr>
+        const best = r.price === minP && minP != null, worst = r.price === maxP && maxP != null && minP !== maxP;
+        return `<tr>
         <td><span class="stag">${esc(r.site)}</span></td>
         <td style="font-size:11px;max-width:180px">${esc(r.productName || '—')}</td>
         <td><span class="pv ${best ? 'best' : worst ? 'worst' : ''}">${r.price != null ? '₹' + r.price.toLocaleString('en-IN') : '—'}</span>${best ? '<span class="bdg">BEST</span>' : ''}</td>
@@ -147,29 +147,29 @@ ${priceHtml}${insightHtml}${actHtml}
 async function startJob() {
     const tfKey = document.getElementById('tf-key').value.trim();
     if (!tfKey) {
-    alert('Enter your TinyFish API key first.');
-    return;
+        alert('Enter your TinyFish API key first.');
+        return;
     }
     const product = document.getElementById('product').value.trim();
     if (!product) {
-    alert('Enter a product to research.');
-    return;
+        alert('Enter a product to research.');
+        return;
     }
     const sites = getSelectedSites();
     if (!sites.length) {
-    alert('Select at least one site.');
-    return;
+        alert('Select at least one site.');
+        return;
     }
 
     const btn = document.getElementById('run-btn');
     btn.disabled = true; btn.textContent = '⟳ Running…';
 
     const cfg = {
-    product,
-    qty: document.getElementById('qty').value.trim(),
-    budget: document.getElementById('budget').value.trim(),
-    instructions: document.getElementById('instructions').value.trim(),
-    sites
+        product,
+        qty: document.getElementById('qty').value.trim(),
+        budget: document.getElementById('budget').value.trim(),
+        instructions: document.getElementById('instructions').value.trim(),
+        sites
     };
     const job = mkJob(cfg);
     activeId = job.id;
@@ -183,8 +183,8 @@ async function startJob() {
 
     // If not already stopped, finish normally
     if (job.status !== 'stopped') {
-    job.status = 'done'; job.endTime = Date.now();
-    buildInsight(job);
+        job.status = 'done'; job.endTime = Date.now();
+        buildInsight(job);
     }
     renderSidebar();
     if (activeId === job.id) renderJob(job);
@@ -198,78 +198,78 @@ async function runSite(job, site, idx, tfKey) {
     updateUI(job, idx);
 
     const body = {
-    url: site.url,
-    goal: buildGoal(job.cfg),
-    browser_profile: 'stealth',
-    proxy_config: { enabled: false }
+        url: site.url,
+        goal: buildGoal(job.cfg),
+        browser_profile: 'stealth',
+        proxy_config: { enabled: false }
     };
 
     try {
-    // POST to our proxy which forwards to TinyFish and streams back SSE
-    const controller = new AbortController();
-    s.controller = controller;
-    const resp = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-TinyFish-Key': tfKey },
-        body: JSON.stringify(body),
-        signal: controller.signal
-    });
+        // POST to our proxy which forwards to TinyFish and streams back SSE
+        const controller = new AbortController();
+        s.controller = controller;
+        const resp = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-TinyFish-Key': tfKey },
+            body: JSON.stringify(body),
+            signal: controller.signal
+        });
 
-    if (!resp.ok) {
-        const err = await resp.text();
-        if (resp.status === 404 || resp.status === 405 || err.includes('Cannot POST')) {
-        throw new CorsError('Backend proxy not configured or listening. See setup instructions below.');
+        if (!resp.ok) {
+            const err = await resp.text();
+            if (resp.status === 404 || resp.status === 405 || err.includes('Cannot POST')) {
+                throw new CorsError('Backend proxy not configured or listening. See setup instructions below.');
+            }
+            throw new Error(`Proxy error ${resp.status}: ${err.slice(0, 100)}`);
         }
-        throw new Error(`Proxy error ${resp.status}: ${err.slice(0, 100)}`);
-    }
 
-    addLog(job.id, idx, 'a', 'Browser agent active, navigating site…');
+        addLog(job.id, idx, 'a', 'Browser agent active, navigating site…');
 
-    // Read SSE stream from proxy
-    const reader = resp.body.getReader();
-    const dec = new TextDecoder();
-    let buf = '';
+        // Read SSE stream from proxy
+        const reader = resp.body.getReader();
+        const dec = new TextDecoder();
+        let buf = '';
 
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += dec.decode(value, { stream: true });
-        const lines = buf.split('\n');
-        buf = lines.pop();
-        for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const raw = line.slice(6).trim();
-        if (!raw || raw === '[DONE]') continue;
-        try {
-            const ev = JSON.parse(raw);
-            handleEvent(job, idx, site, ev);
-        } catch (e) { }
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += dec.decode(value, { stream: true });
+            const lines = buf.split('\n');
+            buf = lines.pop();
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const raw = line.slice(6).trim();
+                if (!raw || raw === '[DONE]') continue;
+                try {
+                    const ev = JSON.parse(raw);
+                    handleEvent(job, idx, site, ev);
+                } catch (e) { }
+            }
         }
-    }
 
-    if (s.status === 'running') { s.status = 'done'; addLog(job.id, idx, 'd', 'Completed.'); updateUI(job, idx); }
+        if (s.status === 'running') { s.status = 'done'; addLog(job.id, idx, 'd', 'Completed.'); updateUI(job, idx); }
 
     } catch (err) {
-    // If the fetch was aborted by user, mark as stopped and don't push error result
-    if (err && (err.name === 'AbortError' || (err.message || '').toLowerCase().includes('aborted'))) {
-        s.status = 'stopped';
-        addLog(job.id, idx, 'e', 'Stopped by user.');
-        updateUI(job, idx);
-        if (activeId === job.id) renderJob(job);
-        return;
-    }
+        // If the fetch was aborted by user, mark as stopped and don't push error result
+        if (err && (err.name === 'AbortError' || (err.message || '').toLowerCase().includes('aborted'))) {
+            s.status = 'stopped';
+            addLog(job.id, idx, 'e', 'Stopped by user.');
+            updateUI(job, idx);
+            if (activeId === job.id) renderJob(job);
+            return;
+        }
 
-    if (err instanceof CorsError || err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed to fetch') || err.message.includes('proxy')) {
-        // Proxy not running — fall back to Claude web_search for demo purposes
-        addLog(job.id, idx, 'a', 'Proxy not available. Falling back to web search agent…');
-        await runViaWebSearch(job, site, idx, tfKey);
-    } else {
-        s.status = 'error';
-        addLog(job.id, idx, 'e', err.message.slice(0, 100));
-        job.results.push({ site: site.name, productName: null, price: null, availability: 'Error', notes: err.message.slice(0, 80) });
-        updateUI(job, idx);
-        if (activeId === job.id) renderJob(job);
-    }
+        if (err instanceof CorsError || err.message.includes('fetch') || err.message.includes('NetworkError') || err.message.includes('Failed to fetch') || err.message.includes('proxy')) {
+            // Proxy not running — fall back to Claude web_search for demo purposes
+            addLog(job.id, idx, 'a', 'Proxy not available. Falling back to web search agent…');
+            await runViaWebSearch(job, site, idx, tfKey);
+        } else {
+            s.status = 'error';
+            addLog(job.id, idx, 'e', err.message.slice(0, 100));
+            job.results.push({ site: site.name, productName: null, price: null, availability: 'Error', notes: err.message.slice(0, 80) });
+            updateUI(job, idx);
+            if (activeId === job.id) renderJob(job);
+        }
     }
 }
 
@@ -283,21 +283,21 @@ function handleEvent(job, idx, site, ev) {
     else if (type === 'PROGRESS') { const m = ev.purpose || ev.message || ''; if (m) addLog(job.id, idx, 'a', m.slice(0, 100)); }
     else if (type === 'THINKING') { const m = ev.message || ev.content || ''; if (m) addLog(job.id, idx, 't', m.slice(0, 100)); }
     else if (type === 'COMPLETE' || type === 'COMPLETED') {
-    s.status = 'done';
-    const r = ev.resultJson || ev.result_json || ev.result || null;
-    if (r) {
-        const parsed = parseResult(site.name, r);
-        if (parsed) { job.results.push(parsed); addLog(job.id, idx, 'd', `Done → ₹${parsed.price != null ? parsed.price.toLocaleString('en-IN') : 'N/A'}`); }
-        else addLog(job.id, idx, 'd', 'Extraction complete (no price found).');
-    } else addLog(job.id, idx, 'd', 'Complete. No structured result.');
-    updateUI(job, idx);
-    if (activeId === job.id) renderJob(job);
+        s.status = 'done';
+        const r = ev.resultJson || ev.result_json || ev.result || null;
+        if (r) {
+            const parsed = parseResult(site.name, r);
+            if (parsed) { job.results.push(parsed); addLog(job.id, idx, 'd', `Done → ₹${parsed.price != null ? parsed.price.toLocaleString('en-IN') : 'N/A'}`); }
+            else addLog(job.id, idx, 'd', 'Extraction complete (no price found).');
+        } else addLog(job.id, idx, 'd', 'Complete. No structured result.');
+        updateUI(job, idx);
+        if (activeId === job.id) renderJob(job);
     } else if (type === 'ERROR') {
-    s.status = 'error';
-    addLog(job.id, idx, 'e', (ev.message || ev.error || 'Agent error').slice(0, 100));
-    job.results.push({ site: site.name, productName: null, price: null, availability: 'Error', notes: (ev.message || ev.error || '').slice(0, 80) });
-    updateUI(job, idx);
-    if (activeId === job.id) renderJob(job);
+        s.status = 'error';
+        addLog(job.id, idx, 'e', (ev.message || ev.error || 'Agent error').slice(0, 100));
+        job.results.push({ site: site.name, productName: null, price: null, availability: 'Error', notes: (ev.message || ev.error || '').slice(0, 80) });
+        updateUI(job, idx);
+        if (activeId === job.id) renderJob(job);
     }
 }
 
@@ -308,12 +308,12 @@ function stopJob(jobId) {
     job.endTime = Date.now();
     // abort all running streams
     job.streams.forEach((s, i) => {
-    if (s.controller && typeof s.controller.abort === 'function') {
-        try { s.controller.abort(); } catch (e) { }
-        s.status = s.status === 'done' ? 'done' : 'stopped';
-        addLog(job.id, i, 'e', 'Stopped by user.');
-        updateUI(job, i);
-    }
+        if (s.controller && typeof s.controller.abort === 'function') {
+            try { s.controller.abort(); } catch (e) { }
+            s.status = s.status === 'done' ? 'done' : 'stopped';
+            addLog(job.id, i, 'e', 'Stopped by user.');
+            updateUI(job, i);
+        }
     });
     renderSidebar();
     if (activeId === job.id) renderJob(job);
@@ -328,9 +328,9 @@ function parseResult(siteName, r) {
     const rawP = d.price || d.unit_price || d.current_price || d.amount;
     if (rawP != null) price = parseFloat(String(rawP).replace(/[^0-9.]/g, '')) || null;
     return {
-    site: siteName, productName: d.name || d.product_name || d.title || null, price,
-    availability: d.availability || (d.in_stock != null ? (d.in_stock ? 'In Stock' : 'Out of Stock') : null) || null,
-    notes: [d.bulk_discount, d.shipping].filter(Boolean).join(' · ') || d.notes || null
+        site: siteName, productName: d.name || d.product_name || d.title || null, price,
+        availability: d.availability || (d.in_stock != null ? (d.in_stock ? 'In Stock' : 'Out of Stock') : null) || null,
+        notes: [d.bulk_discount, d.shipping].filter(Boolean).join(' · ') || d.notes || null
     };
 }
 
@@ -348,56 +348,56 @@ If not found, set error field and price to null.`;
 Return only the JSON object.`;
 
     try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        system: sys,
-        messages: [{ role: 'user', content: msg }],
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }]
-        })
-    });
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 800,
+                system: sys,
+                messages: [{ role: 'user', content: msg }],
+                tools: [{ type: 'web_search_20250305', name: 'web_search' }]
+            })
+        });
 
-    if (!resp.ok) {
-        const errText = await resp.text();
-        throw new Error(`Claude API ${resp.status}: ${errText.slice(0, 120)}`);
-    }
+        if (!resp.ok) {
+            const errText = await resp.text();
+            throw new Error(`Claude API ${resp.status}: ${errText.slice(0, 120)}`);
+        }
 
-    const data = await resp.json();
-    addLog(job.id, idx, 't', 'Processing search results…');
+        const data = await resp.json();
+        addLog(job.id, idx, 't', 'Processing search results…');
 
-    // Log any search actions
-    data.content?.filter(b => b.type === 'tool_use').forEach(b => {
-        addLog(job.id, idx, 'a', `Searching: ${b.input?.query || '…'}`);
-    });
+        // Log any search actions
+        data.content?.filter(b => b.type === 'tool_use').forEach(b => {
+            addLog(job.id, idx, 'a', `Searching: ${b.input?.query || '…'}`);
+        });
 
-    const textBlock = data.content?.filter(b => b.type === 'text').pop();
-    if (!textBlock) throw new Error('No response from Claude');
+        const textBlock = data.content?.filter(b => b.type === 'text').pop();
+        if (!textBlock) throw new Error('No response from Claude');
 
-    const clean = textBlock.text.replace(/```json|```/g, '').trim();
-    let result;
-    try { result = JSON.parse(clean); }
-    catch (e) {
-        const m = clean.match(/\{[\s\S]*?\}/);
-        if (m) result = JSON.parse(m[0]); else throw new Error('Could not parse result');
-    }
+        const clean = textBlock.text.replace(/```json|```/g, '').trim();
+        let result;
+        try { result = JSON.parse(clean); }
+        catch (e) {
+            const m = clean.match(/\{[\s\S]*?\}/);
+            if (m) result = JSON.parse(m[0]); else throw new Error('Could not parse result');
+        }
 
-    s.status = 'done';
-    let price = null;
-    if (result.price != null) price = parseFloat(String(result.price).replace(/[^0-9.]/g, '')) || null;
-    const priceStr = price != null ? ` → ₹${price.toLocaleString('en-IN')}` : '';
-    addLog(job.id, idx, 'd', `Done${priceStr}`);
-    job.results.push({
-        site: site.name, productName: result.name || null, price,
-        availability: result.availability || null, notes: [result.bulk_discount, result.shipping].filter(Boolean).join(' · ') || result.notes || null
-    });
+        s.status = 'done';
+        let price = null;
+        if (result.price != null) price = parseFloat(String(result.price).replace(/[^0-9.]/g, '')) || null;
+        const priceStr = price != null ? ` → ₹${price.toLocaleString('en-IN')}` : '';
+        addLog(job.id, idx, 'd', `Done${priceStr}`);
+        job.results.push({
+            site: site.name, productName: result.name || null, price,
+            availability: result.availability || null, notes: [result.bulk_discount, result.shipping].filter(Boolean).join(' · ') || result.notes || null
+        });
 
     } catch (err) {
-    s.status = 'error';
-    addLog(job.id, idx, 'e', `${err.message.slice(0, 100)}`);
-    job.results.push({ site: site.name, productName: null, price: null, availability: 'Error', notes: err.message.slice(0, 80) });
+        s.status = 'error';
+        addLog(job.id, idx, 'e', `${err.message.slice(0, 100)}`);
+        job.results.push({ site: site.name, productName: null, price: null, availability: 'Error', notes: err.message.slice(0, 80) });
     }
     updateUI(job, idx);
     if (activeId === job.id) renderJob(job);
@@ -421,8 +421,8 @@ function buildInsight(job) {
     job.insight = `${best.site} offers the lowest price at ₹${best.price.toLocaleString('en-IN')}, saving ${sav}% vs ₹${worst.price.toLocaleString('en-IN')} from ${worst.site}.`;
     if (mid.length) job.insight += ` Mid-range options: ${mid.map(r => `${r.site} at ₹${r.price.toLocaleString('en-IN')}`).join(', ')}.`;
     job.insight += job.cfg && job.cfg.qty
-    ? ` For ${job.cfg.qty}, recommend sourcing from ${best.site}. Verify current availability and shipping costs before ordering.`
-    : ` Recommend sourcing from ${best.site}. Verify current availability and shipping costs before ordering.`;
+        ? ` For ${job.cfg.qty}, recommend sourcing from ${best.site}. Verify current availability and shipping costs before ordering.`
+        : ` Recommend sourcing from ${best.site}. Verify current availability and shipping costs before ordering.`;
 }
 
 // ─── UI helpers ────────────────────────────────────────────────
@@ -454,16 +454,20 @@ function exportCSV(id) {
 
 function copyRec(id) { const job = jobs.find(j => j.id === id); if (job?.insight) navigator.clipboard.writeText(job.insight).then(() => alert('Copied!')); }
 function rerun(id) {
-    const job = jobs.find(j => j.id === id); if (!job) return;
-    set('product', job.cfg.product); set('qty', job.cfg.qty); set('budget', job.cfg.budget); set('instructions', job.cfg.instructions || '');
+    const job = jobs.find(j => j.id === id);
+    if (!job) return;
+    set('product', job.cfg.product);
+    set('qty', job.cfg.qty);
+    set('budget', job.cfg.budget);
+    set('instructions', job.cfg.instructions || '');
     document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', job.cfg.sites.some(s => s.name === c.textContent.trim())));
 }
 
-function esc(s) { 
-    if (s == null) return ''; 
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); 
+function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function getSelectedSites() { 
-    return [...document.querySelectorAll('.chip.on')].map(c => ({ name: c.textContent.trim(), url: c.dataset.url })); 
+function getSelectedSites() {
+    return [...document.querySelectorAll('.chip.on')].map(c => ({ name: c.textContent.trim(), url: c.dataset.url }));
 }
