@@ -45,8 +45,12 @@ app.post('/api/tinyfish', async (req, res) => {
 
 // Explicitly serve the agent HTML on the root path
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'scout-procurement-agent.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Scout proxy running at http://localhost:${PORT}`));
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Scout proxy running at http://localhost:${PORT}`));
+}
+
+module.exports = app;
